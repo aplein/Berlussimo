@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Malbuch-Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>🎨 Malbuch-Generator</h1>
+    <div id="status" class="status">Prüfe Fooocus-Verbindung …</div>
+  </header>
+
+  <main>
+    <form id="form" class="card">
+      <p class="lead">
+        „Erstelle mir <strong>[Anzahl]</strong> Bilder <strong>[Thema]</strong>
+        in diesem Stil mit folgendem Text auf der Seite <strong>[Text]</strong>.“
+      </p>
+
+      <label>Thema
+        <input type="text" id="theme" placeholder="z. B. niedliche Dinosaurier" required>
+      </label>
+
+      <div class="row">
+        <label>Stil
+          <select id="style">
+            {% for p in presets %}
+            <option value="{{ p.key }}" {% if p.key == default_style %}selected{% endif %}>{{ p.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>Anzahl Bilder
+          <input type="number" id="count" value="30" min="1" max="{{ max_images }}">
+        </label>
+      </div>
+
+      <label>Text auf jeder Seite (optional)
+        <input type="text" id="page_text" placeholder="z. B. Mein Dino-Malbuch">
+      </label>
+
+      <label>Titel des Malbuchs (optional)
+        <input type="text" id="title" placeholder="wird sonst aus dem Thema gebildet">
+      </label>
+
+      <button type="submit" id="startBtn">Bilder erstellen</button>
+    </form>
+
+    <section id="progress" class="card hidden">
+      <h2>Fortschritt</h2>
+      <div class="progressbar"><div id="bar"></div></div>
+      <div id="progressText">…</div>
+      <button id="cancelBtn" class="secondary">Abbrechen</button>
+    </section>
+
+    <section id="gallerySection" class="card hidden">
+      <div class="gallery-head">
+        <h2>Galerie</h2>
+        <div>
+          <button id="saveCaptionsBtn" class="secondary">Texte speichern</button>
+          <button id="pdfBtn">📕 PDF-Malbuch erstellen</button>
+        </div>
+      </div>
+      <div id="pdfLink"></div>
+      <div id="gallery" class="gallery"></div>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
