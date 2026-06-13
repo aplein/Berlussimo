@@ -28,13 +28,13 @@ pip install --quiet -r requirements.txt
 
 echo.
 echo ============================================================
-echo  Malbuch-Generator laeuft auf:  http://127.0.0.1:5000
+echo  Malbuch-Generator laeuft auf:  http://127.0.0.1:5010
 echo  (Fenster offen lassen. Zum Beenden: Strg+C)
 echo ============================================================
 echo.
 
 REM Browser nach kurzer Wartezeit oeffnen
-start "" /b cmd /c "timeout /t 2 >nul & start http://127.0.0.1:5000"
+start "" /b cmd /c "timeout /t 2 >nul & start http://127.0.0.1:5010"
 
 python app.py
 

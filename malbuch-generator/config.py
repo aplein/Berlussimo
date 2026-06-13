@@ -21,6 +21,9 @@ BASE_DIR = Path(__file__).parent
 OUTPUT_DIR = BASE_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# Port, auf dem die Malbuch-App läuft.
+APP_PORT = int(os.environ.get("APP_PORT", "5010"))
+
 # Adresse der Fooocus-API (REST-Wrapper für Fooocus). Standard-Port: 8888.
 FOOOCUS_API_URL = os.environ.get("FOOOCUS_API_URL", "http://127.0.0.1:8888")
 

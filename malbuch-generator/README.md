@@ -62,7 +62,7 @@ erscheint, läuft die API.
    Setup unbedingt **„Add python.exe to PATH"** anhaken.
 3. Doppelklick auf **`start.bat`**. Beim ersten Start richtet das Skript alles
    selbst ein (virtuelle Umgebung, Abhängigkeiten) und öffnet den Browser auf
-   `http://127.0.0.1:5000`.
+   `http://127.0.0.1:5010`.
 
 > Voraussetzung bleibt: Die **Fooocus-API** muss laufen (siehe oben).
 
@@ -79,7 +79,7 @@ cp .env.example .env        # z. B. anderen Fooocus-Port eintragen
 python app.py
 ```
 
-Dann im Browser öffnen: **http://127.0.0.1:5000**
+Dann im Browser öffnen: **http://127.0.0.1:5010**
 
 Oben rechts siehst du, ob Fooocus verbunden ist (grün = bereit).
 

@@ -272,6 +272,6 @@ def download_pdf(job_id):
 
 
 if __name__ == "__main__":
-    print("Malbuch-Generator läuft auf http://127.0.0.1:5000")
+    print(f"Malbuch-Generator läuft auf http://127.0.0.1:{config.APP_PORT}")
     print(f"Fooocus-API erwartet unter: {config.FOOOCUS_API_URL}")
-    app.run(host="127.0.0.1", port=5000, debug=False, threaded=True)
+    app.run(host="127.0.0.1", port=config.APP_PORT, debug=False, threaded=True)
