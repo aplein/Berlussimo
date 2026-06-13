@@ -74,4 +74,15 @@ class FooocusClient:
         if not b64:
             raise FooocusError("Antwort der Fooocus-API enthielt kein Bild.")
 
-        return base64.b64decode(b64)
+        # Fooocus-API liefert das Bild je nach Version als reines Base64 ODER
+        # als Data-URI ("data:image/png;base64,...."). Prefix entfernen sowie
+        # Whitespace und fehlendes Padding korrigieren, damit das Decodieren
+        # in beiden Faellen klappt.
+        if "base64," in b64:
+            b64 = b64.split("base64,", 1)[1]
+        b64 = "".join(b64.split())
+        b64 += "=" * (-len(b64) % 4)
+        try:
+            return base64.b64decode(b64)
+        except ValueError as exc:
+            raise FooocusError(f"Bilddaten konnten nicht dekodiert werden: {exc}") from exc
