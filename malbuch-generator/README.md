@@ -55,6 +55,19 @@ erscheint, läuft die API.
 
 ## Diese App starten
 
+### Windows (einfachste Variante)
+
+1. Den Ordner `malbuch-generator` z. B. nach `C:\malbuch-generator` kopieren.
+2. **Python 3.10+** installieren (https://www.python.org/downloads/) – beim
+   Setup unbedingt **„Add python.exe to PATH"** anhaken.
+3. Doppelklick auf **`start.bat`**. Beim ersten Start richtet das Skript alles
+   selbst ein (virtuelle Umgebung, Abhängigkeiten) und öffnet den Browser auf
+   `http://127.0.0.1:5000`.
+
+> Voraussetzung bleibt: Die **Fooocus-API** muss laufen (siehe oben).
+
+### Linux / macOS (oder manuell)
+
 ```bash
 cd malbuch-generator
 python -m venv .venv && source .venv/bin/activate   # optional, empfohlen
