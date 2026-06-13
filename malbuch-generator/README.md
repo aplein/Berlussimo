@@ -55,7 +55,27 @@ erscheint, läuft die API.
 
 ## Diese App starten
 
-### Windows (einfachste Variante)
+### Windows – Komplett-Installation per `setup.bat` (empfohlen)
+
+Für einen frischen PC gibt es ein Installationsskript, das **alles** einrichtet
+(Python 3.10, Fooocus-API, passende CUDA-/CPU-PyTorch-Version, App-Umgebung).
+
+1. Ordner `C:\KI-Malbuch-Generator\` anlegen.
+2. Das `malbuch-generator`-ZIP dort hinein entpacken.
+3. `setup.bat` und `start-all.bat` eine Ebene höher legen, sodass es so aussieht:
+   ```
+   C:\KI-Malbuch-Generator\
+   ├── malbuch-generator\   (diese App)
+   ├── setup.bat            (einmalige Installation)
+   └── start-all.bat        (täglicher Start)
+   ```
+4. **`setup.bat`** doppelklicken und warten (mehrere GB Download). Fooocus-API
+   wird dabei automatisch nach `Fooocus-API\` geladen.
+5. Danach immer mit **`start-all.bat`** starten.
+
+> Beim allerersten `start-all.bat` lädt Fooocus-API noch das Bildmodell (~6 GB).
+
+### Windows – nur die App (manuell)
 
 1. Den Ordner `malbuch-generator` z. B. nach `C:\malbuch-generator` kopieren.
 2. **Python 3.10+** installieren (https://www.python.org/downloads/) – beim
