@@ -42,19 +42,32 @@ def _save_job_meta(job: dict):
     )
 
 
-def _build_prompt(theme: str, preset: dict) -> str:
+def _build_prompt(theme: str, suffix: str) -> str:
     theme = theme.strip().rstrip(",")
-    return f"{theme}, {preset['prompt_suffix']}"
+    suffix = (suffix or "").strip()
+    return f"{theme}, {suffix}" if suffix else theme
+
+
+def _scene_for(job: dict, index: int) -> str:
+    """Szene/Aktivität für eine Seite (für den Geschichte-Modus), sonst ''."""
+    scenes = job.get("scenes") or []
+    return scenes[index] if index < len(scenes) else ""
+
+
+def _caption_for(job: dict, index: int) -> str:
+    """Seitentext: im Geschichte-Modus die Szene, sonst der globale Text."""
+    return _scene_for(job, index) or job["page_text"]
 
 
 def _generate_one(job: dict, index: int, seed: int = -1) -> dict:
     """Erzeugt ein einzelnes Bild und legt es auf der Platte ab."""
-    preset = config.STYLE_PRESETS[job["style"]]
-    prompt = _build_prompt(job["theme"], preset)
+    scene = _scene_for(job, index)
+    subject = f'{job["theme"]} {scene}'.strip() if scene else job["theme"]
+    prompt = _build_prompt(subject, job["prompt_suffix"])
     png = client.text_to_image(
         prompt=prompt,
-        negative_prompt=preset["negative"],
-        styles=preset["styles"],
+        negative_prompt=job["negative_prompt"],
+        styles=job["styles"],
         seed=seed,
     )
     filename = f"img_{index:03d}.png"
@@ -64,7 +77,7 @@ def _generate_one(job: dict, index: int, seed: int = -1) -> dict:
         "index": index,
         "file": str(path),
         "filename": filename,
-        "caption": job["page_text"],
+        "caption": _caption_for(job, index),
         "error": None,
     }
 
@@ -81,7 +94,7 @@ def _run_job(job_id: str):
             img = _generate_one(job, i)
         except FooocusError as exc:
             img = {"index": i, "file": None, "filename": None,
-                   "caption": job["page_text"], "error": str(exc)}
+                   "caption": _caption_for(job, i), "error": str(exc)}
         with jobs_lock:
             job["images"].append(img)
             job["done"] = len(job["images"])
@@ -94,7 +107,15 @@ def _run_job(job_id: str):
 
 @app.route("/")
 def index():
-    presets = [{"key": k, "label": v["label"]} for k, v in config.STYLE_PRESETS.items()]
+    presets = [
+        {
+            "key": k,
+            "label": v["label"],
+            "prompt_suffix": v["prompt_suffix"],
+            "negative": v["negative"],
+        }
+        for k, v in config.STYLE_PRESETS.items()
+    ]
     return render_template(
         "index.html",
         presets=presets,
@@ -129,11 +150,34 @@ def create_job():
         return jsonify({"error": "Unbekannter Stil."}), 400
     count = max(1, min(count, config.MAX_IMAGES))
 
+    # Stil: aus dem Formular angepasste Werte bevorzugen, sonst die Vorlage.
+    preset = config.STYLE_PRESETS[style]
+    prompt_suffix = data.get("prompt_suffix")
+    if prompt_suffix is None or not prompt_suffix.strip():
+        prompt_suffix = preset["prompt_suffix"]
+    negative_prompt = data.get("negative_prompt")
+    if negative_prompt is None:
+        negative_prompt = preset["negative"]
+    # "Fooocus V2" sorgt fuer mehr Variation/Details; abschaltbar fuer puren Prompt.
+    fooocus_v2 = data.get("fooocus_v2", True)
+    styles = ["Fooocus V2"] if fooocus_v2 else []
+
+    # Geschichte-Modus: eine Szene pro Zeile. Dann entsteht pro Szene ein Bild
+    # und die Zeile wird zum Seitentext. Die Bildanzahl ergibt sich aus den Szenen.
+    scenes = [s.strip() for s in (data.get("scenes") or "").splitlines() if s.strip()]
+    scenes = scenes[:config.MAX_IMAGES]
+    if scenes:
+        count = len(scenes)
+
     job_id = uuid.uuid4().hex[:12]
     job = {
         "id": job_id,
         "theme": theme,
         "style": style,
+        "prompt_suffix": prompt_suffix.strip(),
+        "negative_prompt": negative_prompt.strip(),
+        "styles": styles,
+        "scenes": scenes,
         "page_text": page_text,
         "title": title,
         "count": count,

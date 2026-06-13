@@ -37,7 +37,35 @@
         </label>
       </div>
 
-      <label>Text auf jeder Seite (optional)
+      <details id="styleEditor" open>
+        <summary>🎨 Stil anpassen (optional)</summary>
+        <p class="hint">Eine Vorlage oben wählen füllt diese Felder – du kannst sie
+          dann frei ändern. So steuerst du den Look direkt hier, ohne den Code anzufassen.</p>
+        <label>Stil-Beschreibung (positiv)
+          <textarea id="style_prompt" rows="3"></textarea>
+        </label>
+        <label>Was vermeiden (Negativ-Prompt)
+          <textarea id="negative_prompt" rows="2"></textarea>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="fooocus_v2" checked>
+          Fooocus-Auto-Stil (mehr Variation &amp; Details – abschalten für puren Prompt)
+        </label>
+        <button type="button" id="resetStyle" class="secondary small">↺ Vorlage zurücksetzen</button>
+      </details>
+
+      <details id="storyEditor">
+        <summary>📖 Geschichte erzählen / Szenen (optional)</summary>
+        <p class="hint">Eine Szene pro Zeile. Dann entsteht <strong>pro Zeile ein Bild</strong>,
+          kombiniert mit dem Thema oben – und die Zeile wird automatisch zum Seitentext.
+          Beispiel: Thema „Die Wikinger" + Szenen „bei der Jagd", „beim Fischen" …
+          Die Bildanzahl richtet sich dann nach der Zeilenzahl.</p>
+        <textarea id="scenes" rows="6" placeholder="bei der Jagd&#10;beim Fischen&#10;beim Holz machen&#10;am Lagerfeuer"></textarea>
+        <div id="sceneCount" class="hint"></div>
+        <button type="button" id="exampleScenes" class="secondary small">Beispiel-Szenen einfügen</button>
+      </details>
+
+      <label>Text auf jeder Seite (falls keine Szenen, optional)
         <input type="text" id="page_text" placeholder="z. B. Mein Dino-Malbuch">
       </label>
 
@@ -68,6 +96,7 @@
     </section>
   </main>
 
+  <script>window.PRESETS = {{ presets|tojson }};</script>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

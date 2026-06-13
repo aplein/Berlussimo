@@ -5,6 +5,44 @@ let pollTimer = null;
 
 const $ = (id) => document.getElementById(id);
 
+// Stil-Vorlagen für die editierbaren Felder
+const PRESETS = {};
+(window.PRESETS || []).forEach((p) => { PRESETS[p.key] = p; });
+
+function applyPreset() {
+  const p = PRESETS[$("style").value];
+  if (!p) return;
+  $("style_prompt").value = p.prompt_suffix || "";
+  $("negative_prompt").value = p.negative || "";
+}
+$("style").addEventListener("change", applyPreset);
+$("resetStyle").addEventListener("click", applyPreset);
+applyPreset(); // Felder beim Laden vorbelegen
+
+// Geschichte-/Szenen-Modus
+function sceneLines() {
+  return $("scenes").value.split("\n").map((s) => s.trim()).filter(Boolean);
+}
+function updateSceneCount() {
+  const n = sceneLines().length;
+  $("sceneCount").textContent = n
+    ? `→ ${n} Szenen = ${n} Bilder (die Anzahl oben wird dann ignoriert)`
+    : "";
+}
+$("scenes").addEventListener("input", updateSceneCount);
+$("exampleScenes").addEventListener("click", () => {
+  $("scenes").value = [
+    "bei der Jagd",
+    "beim Fischen",
+    "beim Holz machen",
+    "am Lagerfeuer",
+    "beim Bootsbau",
+    "auf großer Fahrt",
+  ].join("\n");
+  $("storyEditor").open = true;
+  updateSceneCount();
+});
+
 async function checkHealth() {
   const el = $("status");
   try {
@@ -31,6 +69,10 @@ $("form").addEventListener("submit", async (e) => {
     count: parseInt($("count").value, 10),
     page_text: $("page_text").value,
     title: $("title").value,
+    prompt_suffix: $("style_prompt").value,
+    negative_prompt: $("negative_prompt").value,
+    fooocus_v2: $("fooocus_v2").checked,
+    scenes: $("scenes").value,
   };
   if (!body.theme.trim()) return;
 
