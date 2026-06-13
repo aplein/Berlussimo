@@ -8,6 +8,7 @@ from pathlib import Path
 from PIL import Image
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 
@@ -24,14 +25,22 @@ def build_coloring_book(
     images: list[dict],
     output_path: Path,
     title: str = "Malbuch",
+    max_pixels: int = 2000,
 ) -> Path:
     """Erzeugt das PDF.
 
     images: Liste von Dicts mit "file" (Pfad zum Bild) und optional "caption".
+    max_pixels: längste Bildkante; größere Bilder werden sanft verkleinert
+        (für den Druck bleibt das mehr als ausreichend scharf).
+
+    Die Bilder werden in Graustufen eingebettet und verlustfrei (Flate)
+    komprimiert. Bei schwarz-weißer Malbuch-Linienkunst spart das viel Platz,
+    ohne sichtbaren Qualitätsverlust.
     """
     page_w, page_h = A4
     margin = 15 * mm
     c = canvas.Canvas(str(output_path), pagesize=A4)
+    c.setPageCompression(1)
 
     # --- Titelseite ---
     c.setFillColorRGB(0, 0, 0)
@@ -64,17 +73,23 @@ def build_coloring_book(
         avail_w = page_w - 2 * margin
         avail_h = image_top - margin
         with Image.open(img_path) as im:
+            # Graustufen: schwarz-weiße Linien brauchen keine Farbkanäle ->
+            # rund 1/3 der Bilddaten, ohne sichtbaren Qualitätsverlust.
+            im = im.convert("L")
+            if max_pixels and max(im.size) > max_pixels:
+                im.thumbnail((max_pixels, max_pixels), Image.LANCZOS)
             iw, ih = im.size
-        scale = min(avail_w / iw, avail_h / ih)
-        draw_w = iw * scale
-        draw_h = ih * scale
-        x = (page_w - draw_w) / 2
-        y = margin + (avail_h - draw_h) / 2
+            reader = ImageReader(im)
+            scale = min(avail_w / iw, avail_h / ih)
+            draw_w = iw * scale
+            draw_h = ih * scale
+            x = (page_w - draw_w) / 2
+            y = margin + (avail_h - draw_h) / 2
 
-        c.drawImage(
-            str(img_path), x, y, width=draw_w, height=draw_h,
-            preserveAspectRatio=True, mask="auto",
-        )
+            c.drawImage(
+                reader, x, y, width=draw_w, height=draw_h,
+                preserveAspectRatio=True, mask="auto",
+            )
         c.showPage()
 
     c.save()
