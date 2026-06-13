@@ -6,6 +6,7 @@ Ablauf:
   3. In der Galerie können einzelne Bilder neu generiert und Texte angepasst werden.
   4. Zum Schluss wird ein druckfertiges PDF-Malbuch gebaut.
 """
+import base64
 import json
 import threading
 import uuid
@@ -21,7 +22,18 @@ from fooocus_client import FooocusClient, FooocusError
 from pdf_builder import build_coloring_book
 
 app = Flask(__name__)
+# Beispielbilder können ein paar MB groß sein -> Upload-Grenze großzügig setzen.
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024
 client = FooocusClient()
+
+# Stärke-Stufen für das Beispielbild (Fooocus cn_weight / cn_stop).
+REFERENCE_STRENGTHS = {
+    "schwach": (0.4, 0.3),
+    "mittel": (0.6, 0.5),
+    "stark": (0.9, 0.7),
+}
+# Zusatz für den Comic-Schalter.
+COMIC_SUFFIX = "comic cartoon style, bold clean outlines"
 
 # In-Memory-Auftragsspeicher. Für ein lokales Einzelplatz-Tool ausreichend;
 # Bilder/Metadaten liegen zusätzlich auf der Platte (output/<job_id>/).
@@ -63,12 +75,26 @@ def _generate_one(job: dict, index: int, seed: int = -1) -> dict:
     """Erzeugt ein einzelnes Bild und legt es auf der Platte ab."""
     scene = _scene_for(job, index)
     subject = f'{job["theme"]} {scene}'.strip() if scene else job["theme"]
-    prompt = _build_prompt(subject, job["prompt_suffix"])
+    suffix = job["prompt_suffix"]
+    if job.get("comic"):
+        suffix = f"{COMIC_SUFFIX}, {suffix}" if suffix else COMIC_SUFFIX
+    prompt = _build_prompt(subject, suffix)
+
+    # Optionales Beispielbild (Stil-/Strukturvorlage) von der Platte laden.
+    ref_b64 = None
+    ref_file = job.get("reference_file")
+    if ref_file and Path(ref_file).exists():
+        ref_b64 = base64.b64encode(Path(ref_file).read_bytes()).decode()
+
     png = client.text_to_image(
         prompt=prompt,
         negative_prompt=job["negative_prompt"],
         styles=job["styles"],
         seed=seed,
+        image_prompt_b64=ref_b64,
+        cn_type=job.get("cn_type", "ImagePrompt"),
+        cn_weight=job.get("cn_weight", 0.6),
+        cn_stop=job.get("cn_stop", 0.5),
     )
     filename = f"img_{index:03d}.png"
     path = _job_dir(job["id"]) / filename
@@ -162,6 +188,9 @@ def create_job():
     fooocus_v2 = data.get("fooocus_v2", True)
     styles = ["Fooocus V2"] if fooocus_v2 else []
 
+    # Comic-Schalter: hängt einen Comic-Stil-Zusatz an den Prompt.
+    comic = bool(data.get("comic"))
+
     # Geschichte-Modus: eine Szene pro Zeile. Dann entsteht pro Szene ein Bild
     # und die Zeile wird zum Seitentext. Die Bildanzahl ergibt sich aus den Szenen.
     scenes = [s.strip() for s in (data.get("scenes") or "").splitlines() if s.strip()]
@@ -170,6 +199,25 @@ def create_job():
         count = len(scenes)
 
     job_id = uuid.uuid4().hex[:12]
+
+    # Optionales Beispielbild (Stil-/Strukturvorlage) auf die Platte legen.
+    reference_file = None
+    cn_type = data.get("reference_type") or "ImagePrompt"
+    cn_weight, cn_stop = REFERENCE_STRENGTHS.get(
+        data.get("reference_strength"), REFERENCE_STRENGTHS["mittel"]
+    )
+    ref_data = data.get("reference_image")
+    if ref_data:
+        try:
+            if "base64," in ref_data:
+                ref_data = ref_data.split("base64,", 1)[1]
+            raw = base64.b64decode(ref_data)
+            ref_path = _job_dir(job_id) / "_reference.png"
+            ref_path.write_bytes(raw)
+            reference_file = str(ref_path)
+        except (ValueError, OSError):
+            return jsonify({"error": "Beispielbild konnte nicht gelesen werden."}), 400
+
     job = {
         "id": job_id,
         "theme": theme,
@@ -177,7 +225,12 @@ def create_job():
         "prompt_suffix": prompt_suffix.strip(),
         "negative_prompt": negative_prompt.strip(),
         "styles": styles,
+        "comic": comic,
         "scenes": scenes,
+        "reference_file": reference_file,
+        "cn_type": cn_type,
+        "cn_weight": cn_weight,
+        "cn_stop": cn_stop,
         "page_text": page_text,
         "title": title,
         "count": count,

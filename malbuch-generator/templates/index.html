@@ -51,7 +51,37 @@
           <input type="checkbox" id="fooocus_v2" checked>
           Fooocus-Auto-Stil (mehr Variation &amp; Details – abschalten für puren Prompt)
         </label>
+        <label class="checkbox">
+          <input type="checkbox" id="comic">
+          🦸 Comic-Stil (Cartoon-Look mit kräftigen Outlines)
+        </label>
         <button type="button" id="resetStyle" class="secondary small">↺ Vorlage zurücksetzen</button>
+      </details>
+
+      <details id="refEditor">
+        <summary>🖼️ Beispielbild als Vorlage (optional)</summary>
+        <p class="hint">Lade ein Bild hoch, an dem sich Fooocus orientiert – dann
+          entstehen neue Motive in ähnlichem Look.</p>
+        <input type="file" id="reference_file" accept="image/*">
+        <div id="refPreview" class="ref-preview hidden">
+          <img id="refImg" alt="Vorschau">
+          <button type="button" id="refClear" class="secondary small">Entfernen</button>
+        </div>
+        <div class="row">
+          <label>Was übernehmen?
+            <select id="reference_type">
+              <option value="ImagePrompt">Stil / Look (ähnliche Bilder)</option>
+              <option value="PyraCanny">Linien / Struktur (Formen übernehmen)</option>
+            </select>
+          </label>
+          <label>Stärke
+            <select id="reference_strength">
+              <option value="schwach">schwach</option>
+              <option value="mittel" selected>mittel</option>
+              <option value="stark">stark</option>
+            </select>
+          </label>
+        </div>
       </details>
 
       <details id="storyEditor">

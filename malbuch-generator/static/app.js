@@ -43,6 +43,26 @@ $("exampleScenes").addEventListener("click", () => {
   updateSceneCount();
 });
 
+// Beispielbild (Image Prompt)
+let referenceDataUrl = null;
+$("reference_file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    referenceDataUrl = reader.result;
+    $("refImg").src = referenceDataUrl;
+    $("refPreview").classList.remove("hidden");
+    $("refEditor").open = true;
+  };
+  reader.readAsDataURL(file);
+});
+$("refClear").addEventListener("click", () => {
+  referenceDataUrl = null;
+  $("reference_file").value = "";
+  $("refPreview").classList.add("hidden");
+});
+
 async function checkHealth() {
   const el = $("status");
   try {
@@ -72,7 +92,11 @@ $("form").addEventListener("submit", async (e) => {
     prompt_suffix: $("style_prompt").value,
     negative_prompt: $("negative_prompt").value,
     fooocus_v2: $("fooocus_v2").checked,
+    comic: $("comic").checked,
     scenes: $("scenes").value,
+    reference_image: referenceDataUrl,
+    reference_type: $("reference_type").value,
+    reference_strength: $("reference_strength").value,
   };
   if (!body.theme.trim()) return;
 

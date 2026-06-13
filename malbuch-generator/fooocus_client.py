@@ -34,8 +34,17 @@ class FooocusClient:
         styles: list[str] | None = None,
         aspect_ratio: str | None = None,
         seed: int = -1,
+        image_prompt_b64: str | None = None,
+        cn_type: str = "ImagePrompt",
+        cn_weight: float = 0.6,
+        cn_stop: float = 0.5,
     ) -> bytes:
-        """Erzeugt ein einzelnes Bild und gibt die PNG-Bytes zurück."""
+        """Erzeugt ein einzelnes Bild und gibt die PNG-Bytes zurück.
+
+        Ist ``image_prompt_b64`` gesetzt, wird das Bild als Stil-/Strukturvorlage
+        verwendet (Fooocus "Image Prompt"). ``cn_type`` z. B. "ImagePrompt"
+        (ähnlicher Look) oder "PyraCanny" (Linien/Struktur).
+        """
         payload = {
             "prompt": prompt,
             "negative_prompt": negative_prompt,
@@ -47,7 +56,16 @@ class FooocusClient:
             "require_base64": True,
             "async_process": False,
         }
-        url = self.base_url + "/v1/generation/text-to-image"
+        if image_prompt_b64:
+            payload["image_prompts"] = [{
+                "cn_img": image_prompt_b64,
+                "cn_stop": cn_stop,
+                "cn_weight": cn_weight,
+                "cn_type": cn_type,
+            }]
+            url = self.base_url + "/v2/generation/image-prompt"
+        else:
+            url = self.base_url + "/v1/generation/text-to-image"
         try:
             resp = requests.post(url, json=payload, timeout=config.GENERATION_TIMEOUT)
         except requests.RequestException as exc:
