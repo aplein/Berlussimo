@@ -66,6 +66,23 @@ erscheint, läuft die API.
 
 > Voraussetzung bleibt: Die **Fooocus-API** muss laufen (siehe oben).
 
+#### Alles mit einem Klick: `start-all.bat`
+
+Wer Fooocus-API und die App zusammen betreibt, kann `start-all.bat` eine Ebene
+über die App legen (z. B. `C:\KI-Malbuch-Generator\start-all.bat`):
+
+```
+C:\KI-Malbuch-Generator\
+├── Fooocus-API\        (REST-Dienst, Port 8888)
+├── malbuch-generator\  (diese App,   Port 5010)
+└── start-all.bat
+```
+
+Ein Doppelklick startet **Fooocus-API** und die **Malbuch-App** in je einem
+Fenster. Liegen die Ordner anders, die Pfade oben in der `.bat` anpassen.
+Hinweis: Die Fooocus-Weboberfläche (`run.bat`, Port 7865) wird dafür **nicht**
+benötigt – Fooocus-API bringt die Engine selbst mit.
+
 ### Linux / macOS (oder manuell)
 
 ```bash
