@@ -53,6 +53,7 @@ STYLE_PRESETS = {
             "no shading, no solid black, no color, no grayscale, simple"
         ),
         "negative": (
+            "extra head, two heads, extra limbs, deformed, mutated, duplicate face, fused bodies, "
             "solid black areas, black fill, filled shapes, silhouette, dark areas, heavy ink, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
             "color, colored, realistic rendering, detailed muscles, 3d, photo, "
@@ -69,6 +70,7 @@ STYLE_PRESETS = {
             "flat white background"
         ),
         "negative": (
+            "extra head, two heads, extra limbs, deformed, mutated, duplicate face, fused bodies, "
             "solid black areas, black fill, filled shapes, silhouette, dark areas, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
             "color, scary, realistic, photo, text, watermark, blurry"
@@ -96,6 +98,7 @@ STYLE_PRESETS = {
             "no shading, no color, white background"
         ),
         "negative": (
+            "extra head, two heads, extra limbs, deformed, mutated, duplicate face, fused bodies, "
             "solid black areas, black fill, filled shapes, silhouette, dark areas, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
             "color, photo, realistic rendering, text, watermark, blurry"
