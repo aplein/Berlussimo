@@ -48,10 +48,12 @@ STYLE_PRESETS = {
         "label": "Malbuch – klare Linien (Standard)",
         "prompt_suffix": (
             "clean black and white line art, coloring book page, thick bold outlines, "
+            "outline only, white interior, hair and fur drawn as thin line strands, "
             "minimal interior detail, large open areas to color, flat white background, "
-            "no shading, no color, no grayscale, simple"
+            "no shading, no solid black, no color, no grayscale, simple"
         ),
         "negative": (
+            "solid black areas, black fill, filled shapes, silhouette, dark areas, heavy ink, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
             "color, colored, realistic rendering, detailed muscles, 3d, photo, "
             "complex background, text, watermark, signature, blurry, noisy"
@@ -62,10 +64,12 @@ STYLE_PRESETS = {
         "label": "Malbuch – niedlich / Kawaii",
         "prompt_suffix": (
             "cute kawaii style, black and white line art, coloring book page for kids, "
-            "thick clean outlines, big friendly shapes, large open areas to color, "
-            "no shading, flat white background"
+            "thick clean outlines, outline only, white interior, hair as thin line strands, "
+            "big friendly shapes, large open areas to color, no shading, no solid black, "
+            "flat white background"
         ),
         "negative": (
+            "solid black areas, black fill, filled shapes, silhouette, dark areas, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
             "color, scary, realistic, photo, text, watermark, blurry"
         ),
@@ -78,6 +82,7 @@ STYLE_PRESETS = {
             "coloring page, no shading, no color, white background, centered"
         ),
         "negative": (
+            "solid black areas, black fill, silhouette, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, color, "
             "photo, realistic, text, watermark, asymmetrical, blurry"
         ),
@@ -87,9 +92,11 @@ STYLE_PRESETS = {
         "label": "Malbuch – detailliert (Erwachsene)",
         "prompt_suffix": (
             "detailed black and white line art, intricate coloring book page for adults, "
-            "fine clean outlines, no shading, no color, white background"
+            "fine clean outlines, outline only, white interior, no solid black, "
+            "no shading, no color, white background"
         ),
         "negative": (
+            "solid black areas, black fill, filled shapes, silhouette, dark areas, "
             "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
             "color, photo, realistic rendering, text, watermark, blurry"
         ),
