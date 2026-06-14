@@ -47,12 +47,14 @@ STYLE_PRESETS = {
     "lineart": {
         "label": "Malbuch – klare Linien (Standard)",
         "prompt_suffix": (
-            "black and white line art, coloring book page, clean bold outlines, "
-            "no shading, no color, no grayscale, pure white background, simple, cute"
+            "clean black and white line art, coloring book page, thick bold outlines, "
+            "minimal interior detail, large open areas to color, flat white background, "
+            "no shading, no color, no grayscale, simple"
         ),
         "negative": (
-            "color, colored, shading, gradient, grayscale, gray, photo, realistic, "
-            "3d, complex background, text, watermark, signature, blurry, noisy"
+            "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
+            "color, colored, realistic rendering, detailed muscles, 3d, photo, "
+            "complex background, text, watermark, signature, blurry, noisy"
         ),
         "styles": ["Fooocus V2"],
     },
@@ -60,11 +62,12 @@ STYLE_PRESETS = {
         "label": "Malbuch – niedlich / Kawaii",
         "prompt_suffix": (
             "cute kawaii style, black and white line art, coloring book page for kids, "
-            "thick clean outlines, big friendly shapes, no shading, white background"
+            "thick clean outlines, big friendly shapes, large open areas to color, "
+            "no shading, flat white background"
         ),
         "negative": (
-            "color, shading, gradient, grayscale, scary, realistic, photo, text, "
-            "watermark, blurry, complex details"
+            "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
+            "color, scary, realistic, photo, text, watermark, blurry"
         ),
         "styles": ["Fooocus V2"],
     },
@@ -75,7 +78,8 @@ STYLE_PRESETS = {
             "coloring page, no shading, no color, white background, centered"
         ),
         "negative": (
-            "color, shading, grayscale, photo, realistic, text, watermark, asymmetrical, blurry"
+            "shading, shadows, hatching, cross-hatching, gray, grayscale, color, "
+            "photo, realistic, text, watermark, asymmetrical, blurry"
         ),
         "styles": ["Fooocus V2"],
     },
@@ -86,7 +90,8 @@ STYLE_PRESETS = {
             "fine clean outlines, no shading, no color, white background"
         ),
         "negative": (
-            "color, shading, gradient, grayscale, photo, realistic, text, watermark, blurry"
+            "shading, shadows, hatching, cross-hatching, gray, grayscale, gradient, "
+            "color, photo, realistic rendering, text, watermark, blurry"
         ),
         "styles": ["Fooocus V2"],
     },
