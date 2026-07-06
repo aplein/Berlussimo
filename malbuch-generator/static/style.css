@@ -170,6 +170,44 @@ button.secondary:hover { background: #dde1ea; }
   flex-wrap: wrap;
   gap: 10px;
 }
+.gallery-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.split-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.split-label input {
+  width: 70px;
+  margin: 0;
+  padding: 6px 8px;
+}
+.sel-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #eef0f8;
+  color: var(--accent);
+}
+.sel-label input {
+  width: auto;
+  margin: 0;
+}
+.tile.deselected {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+}
 
 .gallery {
   display: grid;

@@ -118,11 +118,18 @@
     <section id="gallerySection" class="card hidden">
       <div class="gallery-head">
         <h2>Galerie</h2>
-        <div>
+        <div class="gallery-actions">
+          <button type="button" id="selectAll" class="secondary small">Alle ✓</button>
+          <button type="button" id="selectNone" class="secondary small">Keine</button>
+          <label class="split-label">Seiten pro PDF
+            <input type="number" id="splitSize" value="0" min="0" title="0 = alles in eine Datei">
+          </label>
           <button id="saveCaptionsBtn" class="secondary">Texte speichern</button>
-          <button id="pdfBtn">📕 PDF-Malbuch erstellen</button>
+          <button id="pdfBtn">📕 PDF erstellen</button>
         </div>
       </div>
+      <p class="hint">Nur <strong>angehakte</strong> Bilder kommen ins PDF. „Seiten pro PDF" = 0
+        → alles in eine Datei; sonst wird in mehrere PDFs aufgeteilt.</p>
       <div id="pdfLink"></div>
       <div id="gallery" class="gallery"></div>
     </section>

@@ -335,18 +335,50 @@ def update_captions(job_id):
 
 @app.route("/api/jobs/<job_id>/pdf", methods=["POST"])
 def make_pdf(job_id):
+    data = request.get_json(silent=True) or {}
+    indices = data.get("indices")  # None = alle; sonst nur diese Bild-Indizes
+    try:
+        split = int(data.get("split") or 0)  # 0 = alles in ein PDF, sonst Seiten pro PDF
+    except (TypeError, ValueError):
+        split = 0
+
     with jobs_lock:
         job = jobs.get(job_id)
         if not job:
             abort(404)
-        valid = [img for img in job["images"] if img.get("file") and not img.get("error")]
         title = job["title"]
+        valid = [img for img in job["images"] if img.get("file") and not img.get("error")]
+
+    if indices is not None:
+        wanted = set(indices)
+        valid = [img for img in valid if img["index"] in wanted]
     if not valid:
-        return jsonify({"error": "Keine fertigen Bilder vorhanden."}), 400
+        return jsonify({"error": "Keine (ausgewählten) Bilder vorhanden."}), 400
     valid.sort(key=lambda x: x["index"])
-    pdf_path = _job_dir(job_id) / "malbuch.pdf"
-    build_coloring_book(valid, pdf_path, title=title)
-    return jsonify({"url": url_for("download_pdf", job_id=job_id)})
+
+    # Alte PDFs dieses Auftrags entfernen, damit keine Reste übrig bleiben.
+    for old in _job_dir(job_id).glob("malbuch*.pdf"):
+        old.unlink()
+
+    if split and split > 0:
+        chunks = [valid[i:i + split] for i in range(0, len(valid), split)]
+    else:
+        chunks = [valid]
+
+    total = len(chunks)
+    pdfs = []
+    for n, chunk in enumerate(chunks, start=1):
+        if total == 1:
+            name, chunk_title = "malbuch.pdf", title
+        else:
+            name, chunk_title = f"malbuch_{n:02d}.pdf", f"{title} ({n}/{total})"
+        build_coloring_book(chunk, _job_dir(job_id) / name, title=chunk_title)
+        pdfs.append({
+            "url": url_for("download_pdf", job_id=job_id, filename=name),
+            "name": name,
+            "pages": len(chunk),
+        })
+    return jsonify({"pdfs": pdfs})
 
 
 @app.route("/jobs/<job_id>/images/<filename>")
@@ -357,14 +389,18 @@ def job_image(job_id, filename):
     return send_file(path, mimetype="image/png")
 
 
-@app.route("/jobs/<job_id>/malbuch.pdf")
-def download_pdf(job_id):
-    path = _job_dir(job_id) / "malbuch.pdf"
+@app.route("/jobs/<job_id>/pdf/<filename>")
+def download_pdf(job_id, filename):
+    # Nur eigene PDF-Dateien ausliefern (kein Pfad-Trickserei; <filename> enthält
+    # keine Schrägstriche).
+    if not (filename.startswith("malbuch") and filename.endswith(".pdf")):
+        abort(404)
+    path = _job_dir(job_id) / filename
     if not path.exists():
         abort(404)
     return send_file(
         path, mimetype="application/pdf",
-        as_attachment=True, download_name="malbuch.pdf",
+        as_attachment=True, download_name=filename,
     )
 
 

@@ -181,6 +181,20 @@ function tile(img) {
   }
   div.className = "tile";
 
+  const selLabel = document.createElement("label");
+  selLabel.className = "sel-label";
+  const selBox = document.createElement("input");
+  selBox.type = "checkbox";
+  selBox.className = "sel";
+  selBox.checked = true;
+  selBox.dataset.index = img.index;
+  selBox.addEventListener("change", () => {
+    div.classList.toggle("deselected", !selBox.checked);
+  });
+  selLabel.appendChild(selBox);
+  selLabel.appendChild(document.createTextNode(" ins PDF"));
+  div.appendChild(selLabel);
+
   const image = document.createElement("img");
   image.loading = "lazy"; // bei vielen Bildern: nur Sichtbares wird geladen
   image.src = img.url;
@@ -231,13 +245,34 @@ $("saveCaptionsBtn").addEventListener("click", async () => {
   alert("Texte gespeichert.");
 });
 
+$("selectAll").addEventListener("click", () => {
+  document.querySelectorAll(".tile .sel").forEach((el) => {
+    el.checked = true;
+    el.closest(".tile").classList.remove("deselected");
+  });
+});
+$("selectNone").addEventListener("click", () => {
+  document.querySelectorAll(".tile .sel").forEach((el) => {
+    el.checked = false;
+    el.closest(".tile").classList.add("deselected");
+  });
+});
+
 $("pdfBtn").addEventListener("click", async () => {
   if (!currentJob) return;
-  // Texte vorher mitspeichern, damit sie im PDF landen.
+
+  // Texte + Auswahl einsammeln
   const captions = {};
   document.querySelectorAll(".tile .cap").forEach((el) => {
     captions[el.dataset.index] = el.value;
   });
+  const indices = [];
+  document.querySelectorAll(".tile .sel:checked").forEach((el) => {
+    indices.push(parseInt(el.dataset.index, 10));
+  });
+  if (indices.length === 0) { alert("Keine Bilder ausgewählt."); return; }
+  const split = parseInt($("splitSize").value, 10) || 0;
+
   await fetch(`/api/jobs/${currentJob}/captions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -246,13 +281,19 @@ $("pdfBtn").addEventListener("click", async () => {
 
   $("pdfBtn").disabled = true;
   $("pdfBtn").textContent = "Erstelle PDF …";
-  const r = await fetch(`/api/jobs/${currentJob}/pdf`, { method: "POST" });
+  const r = await fetch(`/api/jobs/${currentJob}/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ indices, split }),
+  });
   const d = await r.json();
   $("pdfBtn").disabled = false;
-  $("pdfBtn").textContent = "📕 PDF-Malbuch erstellen";
+  $("pdfBtn").textContent = "📕 PDF erstellen";
   if (r.ok) {
-    $("pdfLink").innerHTML =
-      `<a href="${d.url}" target="_blank">⬇️ Malbuch herunterladen (PDF)</a>`;
+    const links = (d.pdfs || [])
+      .map((p) => `<a href="${p.url}" target="_blank">⬇️ ${p.name} (${p.pages} Seiten)</a>`)
+      .join("<br>");
+    $("pdfLink").innerHTML = links || "Keine PDFs erzeugt.";
   } else {
     alert(d.error || "Fehler beim PDF.");
   }
