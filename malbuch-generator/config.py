@@ -31,7 +31,7 @@ FOOOCUS_API_URL = os.environ.get("FOOOCUS_API_URL", "http://127.0.0.1:8888")
 GENERATION_TIMEOUT = int(os.environ.get("GENERATION_TIMEOUT", "600"))
 
 # Maximale Bildanzahl pro Auftrag (Sicherheitsgrenze).
-MAX_IMAGES = int(os.environ.get("MAX_IMAGES", "60"))
+MAX_IMAGES = int(os.environ.get("MAX_IMAGES", "1000"))
 
 # Fooocus-Performance: "Speed", "Quality" oder "Extreme Speed".
 PERFORMANCE = os.environ.get("FOOOCUS_PERFORMANCE", "Speed")

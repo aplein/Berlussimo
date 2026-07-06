@@ -2,6 +2,7 @@
 
 let currentJob = null;
 let pollTimer = null;
+const renderedTiles = new Map(); // Bild-Index -> { el, imgEl } für inkrementelles Rendern
 
 const $ = (id) => document.getElementById(id);
 
@@ -111,6 +112,9 @@ $("form").addEventListener("submit", async (e) => {
   if (!r.ok) { alert(d.error || "Fehler beim Starten."); return; }
 
   currentJob = d.id;
+  localStorage.setItem("malbuch_job", currentJob);
+  renderedTiles.clear();
+  $("gallery").innerHTML = "";
   $("progress").classList.remove("hidden");
   $("gallerySection").classList.remove("hidden");
   $("pdfLink").innerHTML = "";
@@ -127,7 +131,9 @@ function poll() {
   fetchJob().then((job) => {
     if (!job) return;
     if (job.state === "running" || job.state === "queued") {
-      pollTimer = setTimeout(poll, 2000);
+      // Bei großen Aufträgen seltener pollen (weniger Last über Nacht).
+      const interval = job.count > 100 ? 5000 : 2000;
+      pollTimer = setTimeout(poll, interval);
     }
   });
 }
@@ -151,12 +157,19 @@ function render(job) {
   $("cancelBtn").style.display =
     (job.state === "running" || job.state === "queued") ? "" : "none";
 
+  // Inkrementell: nur NEUE Bilder anhängen (kein Neuaufbau, kein Neuladen,
+  // vom Nutzer getippte Seitentexte bleiben erhalten).
   const g = $("gallery");
-  g.innerHTML = "";
   job.images
     .slice()
     .sort((a, b) => a.index - b.index)
-    .forEach((img) => g.appendChild(tile(img)));
+    .forEach((img) => {
+      if (!renderedTiles.has(img.index)) {
+        const t = tile(img);
+        renderedTiles.set(img.index, t);
+        g.appendChild(t.el);
+      }
+    });
 }
 
 function tile(img) {
@@ -164,12 +177,13 @@ function tile(img) {
   if (img.error) {
     div.className = "tile error";
     div.textContent = "Fehler: " + img.error;
-    return div;
+    return { el: div, imgEl: null };
   }
   div.className = "tile";
 
   const image = document.createElement("img");
-  image.src = img.url + "?t=" + Date.now();
+  image.loading = "lazy"; // bei vielen Bildern: nur Sichtbares wird geladen
+  image.src = img.url;
   div.appendChild(image);
 
   const cap = document.createElement("input");
@@ -189,11 +203,19 @@ function tile(img) {
       method: "POST",
     });
     const d = await r.json();
-    if (r.ok) render(d); else alert(d.error || "Fehler");
+    regen.disabled = false;
+    regen.textContent = "🔄 neu generieren";
+    if (r.ok) {
+      // nur dieses eine Bild aktualisieren (Cache-Buster erzwingt Neuladen)
+      const updated = (d.images || []).find((i) => i.index === img.index);
+      if (updated && updated.url) image.src = updated.url + "?t=" + Date.now();
+    } else {
+      alert(d.error || "Fehler");
+    }
   };
   div.appendChild(regen);
 
-  return div;
+  return { el: div, imgEl: image };
 }
 
 $("saveCaptionsBtn").addEventListener("click", async () => {
@@ -236,5 +258,26 @@ $("pdfBtn").addEventListener("click", async () => {
   }
 });
 
+// Nach einem Browser-Neustart wieder mit dem laufenden/letzten Auftrag
+// verbinden – so geht ein Nacht-Lauf nicht verloren (solange die App läuft).
+function resumeStoredJob() {
+  const stored = localStorage.getItem("malbuch_job");
+  if (!stored) return;
+  fetch(`/api/jobs/${stored}`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((job) => {
+      if (!job) { localStorage.removeItem("malbuch_job"); return; }
+      currentJob = stored;
+      renderedTiles.clear();
+      $("gallery").innerHTML = "";
+      $("progress").classList.remove("hidden");
+      $("gallerySection").classList.remove("hidden");
+      render(job);
+      if (job.state === "running" || job.state === "queued") poll();
+    })
+    .catch(() => {});
+}
+
+resumeStoredJob();
 checkHealth();
 setInterval(checkHealth, 15000);
